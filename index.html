@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Brunswick County Precinct Results</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f6f7f9;--card:#fff;--tx:#16202a;--mut:#5f6b7a;--bd:#e1e5ea;--yes:#1f7a8c;--no:#d1683b;--acc:#16202a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10151b;--card:#18202a;--tx:#e8edf2;--mut:#93a0ae;--bd:#2a3542;--yes:#4fb3c6;--no:#e88a5e;--acc:#e8edf2}}
+:root[data-theme="dark"]{--bg:#10151b;--card:#18202a;--tx:#e8edf2;--mut:#93a0ae;--bd:#2a3542;--yes:#4fb3c6;--no:#e88a5e;--acc:#e8edf2}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:24px;margin:0 0 2px}.sub{color:var(--mut);margin:0 0 18px}
+.grid{display:grid;gap:12px}.kpis{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px 16px}
+.lbl{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut)}
+.big{font-size:28px;font-weight:700;margin-top:2px}.small{font-size:13px;color:var(--mut)}
+.split{height:14px;border-radius:7px;overflow:hidden;display:flex;margin:10px 0 6px;background:var(--bd)}
+.split i{display:block;height:100%}
+.two{grid-template-columns:2fr 1fr;margin-bottom:12px}@media(max-width:800px){.two{grid-template-columns:1fr}}
+h2{font-size:16px;margin:0 0 10px}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+input,select,button{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:7px 10px}
+button.on{background:var(--acc);color:var(--bg);border-color:var(--acc)}
+.chart{overflow:visible}
+.row{display:grid;grid-template-columns:140px 1fr 64px;align-items:center;gap:8px;padding:3px 4px;border-radius:6px;cursor:pointer;font-size:13px}
+.row:hover,.row.sel{background:var(--bg)}.row.sel{outline:1px solid var(--acc)}
+.nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{position:relative;height:16px}
+.bar:before{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--bd)}
+.bar i{position:absolute;top:2px;height:12px;border-radius:2px}
+.v{text-align:right;font-variant-numeric:tabular-nums;color:var(--mut)}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px;min-width:560px}
+th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--bd);white-space:nowrap}
+th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
+th{cursor:pointer;color:var(--mut);font-size:12px;text-transform:uppercase;user-select:none}
+tr.r{cursor:pointer}tr.r:hover{background:var(--bg)}
+.tag{padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;color:#fff}
+.Yes{background:var(--yes)}.No{background:var(--no)}
+#det .big{font-size:22px}
+.disc{display:inline-block;margin:0 0 14px;padding:4px 12px;border-radius:6px;border:1px solid var(--no);color:var(--no);font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.leg{display:flex;gap:14px;font-size:12px;color:var(--mut);margin-bottom:8px}
+.leg b{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px}
+</style></head><body><div class="wrap">
+<h1>Brunswick County Election Results</h1>
+<p class="sub">Precinct returns, Yes/No vote breakdown. Click any precinct to explore.</p>
+<div class="disc" role="note">Unofficial Results – Subject to Certification</div>
+<div class="grid kpis" id="kpis"></div>
+<div class="grid two">
+ <div class="card"><h2>Margin by precinct</h2>
+  <div class="ctl" id="gbtn"></div>
+  <div class="leg"><span><b style="background:var(--yes)"></b>Yes lead</span><span><b style="background:var(--no)"></b>No lead</span><span>Bars scaled to votes</span></div>
+  <div class="chart" id="chart"></div></div>
+ <div class="card" id="det"></div>
+</div>
+<div class="card"><h2>All precincts</h2>
+ <div class="ctl"><input id="q" placeholder="Search precinct…" type="search">
+ <select id="win"><option value="">All results</option><option>Yes</option><option>No</option></select></div>
+ <div class="tw"><table><thead><tr id="th"></tr></thead><tbody id="tb"></tbody></table></div></div>
+<p class="small" style="text-align:center;margin-top:16px">Unofficial Results – Subject to Certification</p>
+</div>
+<script>
+const RAW=[["CB01","Supply",555,576],["CB02","Shallotte",1764,1659],["CB03","Frying Pan",843,779],["CB04","Secession 2",1124,1215],["CB05","Secession 1",1065,1034],["CB06","Mosquito 1",2565,2065],["NB01","Hood Creek",647,451],["NB02","Leland",3421,2062],["NB03","Town Creek",1519,1342],["NB04","Belville 2",2539,1699],["NB05","Woodburn",882,692],["NB06","Brunswick Forest",3174,2119],["NB07","Belville 1",2977,1966],["SB01","Bolivia",776,828],["SB02","Boiling Spring Lakes",1298,1485],["SB03","Mosquito 2",4529,2488],["SB04","Southport 1",1289,1023],["SB05","Southport 2",1152,928],["SB06","Oak Island 3",1110,1144],["SB07","Oak Island 2",977,1106],["SB08","Oak Island 1",769,649],["WB01","Waccamaw",357,472],["WB02","Hickman\u2019s Crossroads",2682,2449],["WB03","Longwood",394,357],["WB04","Shingletree 2",2260,2315],["WB05","Shingletree 1",1758,1631],["WB06","Grissettown",2650,2426]];
+const D=RAW.map(([c,n,y,no])=>({c,n,y,no,t:y+no,yp:y/(y+no),m:y-no,w:y>=no?"Yes":"No",g:c.slice(0,2)}));
+const T=D.reduce((a,d)=>({y:a.y+d.y,n:a.n+d.no,t:a.t+d.t}),{y:0,n:0,t:0});
+const f=n=>n.toLocaleString("en-US"),p=x=>(x*100).toFixed(1)+"%",sg=n=>(n>0?"+":"")+f(n);
+let grp="ALL",sel=D.find(d=>d.n==="Brunswick Forest"),sk="t",sd=-1;
+const maxM=Math.max(...D.map(d=>Math.abs(d.m)));
+const yw=D.filter(d=>d.w==="Yes").length;
+document.getElementById("kpis").innerHTML=`
+<div class="card"><div class="lbl">Total ballots</div><div class="big">${f(T.t)}</div><div class="small">${D.length} precincts</div></div>
+<div class="card"><div class="lbl">Yes votes</div><div class="big" style="color:var(--yes)">${f(T.y)}</div><div class="small">${p(T.y/T.t)}</div></div>
+<div class="card"><div class="lbl">No votes</div><div class="big" style="color:var(--no)">${f(T.n)}</div><div class="small">${p(T.n/T.t)}</div></div>
+<div class="card"><div class="lbl">County-wide margin</div><div class="big">${sg(T.y-T.n)}</div><div class="small">${T.y>T.n?"Yes":"No"} leads · Yes carried ${yw}, No carried ${D.length-yw}</div>
+<div class="split"><i style="width:${T.y/T.t*100}%;background:var(--yes)"></i><i style="width:${T.n/T.t*100}%;background:var(--no)"></i></div></div>`;
+const gs=["ALL",...new Set(D.map(d=>d.g))];
+function gb(){const e=document.getElementById("gbtn");e.innerHTML=gs.map(g=>`<button class="${g===grp?"on":""}" data-g="${g}">${g==="ALL"?"All":g}</button>`).join("");
+ e.querySelectorAll("button").forEach(b=>b.onclick=()=>{grp=b.dataset.g;gb();chart()})}
+function chart(){
+ const L=D.filter(d=>grp==="ALL"||d.g===grp).sort((a,b)=>b.m-a.m);
+ document.getElementById("chart").innerHTML=L.map(d=>{const w=Math.abs(d.m)/maxM*50;
+  return `<div class="row ${d===sel?"sel":""}" data-c="${d.c}"><span class="nm" title="${d.n}">${d.n}</span>
+  <div class="bar"><i style="${d.m>=0?`left:50%`:`right:50%`};width:${w}%;background:var(--${d.w.toLowerCase()})"></i></div><span class="v">${sg(d.m)}</span></div>`}).join("");
+ document.querySelectorAll(".row").forEach(r=>r.onclick=()=>pick(r.dataset.c))}
+function det(){const d=sel,rank=[...D].sort((a,b)=>b.m-a.m).findIndex(x=>x===d)+1;
+ document.getElementById("det").innerHTML=`<div class="lbl">Precinct spotlight · ${d.c}</div><h2 style="font-size:20px;margin:2px 0 8px">${d.n}</h2>
+ <span class="tag ${d.w}">${d.w.toUpperCase()} WINS</span>
+ <div class="split"><i style="width:${d.yp*100}%;background:var(--yes)"></i><i style="width:${(1-d.yp)*100}%;background:var(--no)"></i></div>
+ <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:12px">
+ <div><div class="lbl">Yes</div><div class="big" style="color:var(--yes)">${f(d.y)}</div><div class="small">${p(d.yp)}</div></div>
+ <div><div class="lbl">No</div><div class="big" style="color:var(--no)">${f(d.no)}</div><div class="small">${p(1-d.yp)}</div></div>
+ <div><div class="lbl">Ballots</div><div class="big">${f(d.t)}</div><div class="small">${p(d.t/T.t)} of county</div></div>
+ <div><div class="lbl">Margin</div><div class="big">${sg(d.m)}</div><div class="small">Rank ${rank} of ${D.length}</div></div></div>
+ <p class="small" style="margin-top:12px">${p(d.y/T.y)} of all county Yes votes and ${p(d.no/T.n)} of all No votes came from here.</p>`}
+const cols=[["c","Code"],["n","Precinct"],["t","Ballots"],["y","Yes"],["no","No"],["yp","Yes %"],["m","Margin"],["w","Result"]];
+document.getElementById("th").innerHTML=cols.map(([k,l])=>`<th data-k="${k}">${l}</th>`).join("");
+document.querySelectorAll("th").forEach(h=>h.onclick=()=>{const k=h.dataset.k;sd=sk===k?-sd:(["c","n","w"].includes(k)?1:-1);sk=k;tbl()});
+function tbl(){const q=document.getElementById("q").value.toLowerCase(),w=document.getElementById("win").value;
+ const L=D.filter(d=>(!w||d.w===w)&&(d.n.toLowerCase().includes(q)||d.c.toLowerCase().includes(q)))
+  .sort((a,b)=>(a[sk]>b[sk]?1:a[sk]<b[sk]?-1:0)*sd);
+ document.getElementById("tb").innerHTML=L.map(d=>`<tr class="r" data-c="${d.c}"><td>${d.c}</td><td>${d.n}</td><td>${f(d.t)}</td><td>${f(d.y)}</td><td>${f(d.no)}</td><td>${p(d.yp)}</td><td>${sg(d.m)}</td><td><span class="tag ${d.w}">${d.w}</span></td></tr>`).join("")||`<tr><td colspan=8>No matches</td></tr>`;
+ document.querySelectorAll("tr.r").forEach(r=>r.onclick=()=>{pick(r.dataset.c);scrollTo({top:0,behavior:"smooth"})})}
+function pick(c){sel=D.find(d=>d.c===c);det();chart()}
+document.getElementById("q").oninput=tbl;document.getElementById("win").onchange=tbl;
+gb();chart();det();tbl();
+</script></body></html>
